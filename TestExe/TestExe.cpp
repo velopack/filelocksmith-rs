@@ -1,8 +1,7 @@
 #include <iostream>
 
-bool SetDebugPrivilege();
-bool IsProcessElevated();
-bool TryCloseProcessesUsingPath(wchar_t* pszAppName, wchar_t* pszPath);
+extern "C" bool SetDebugPrivilege();
+extern "C" bool TryCloseProcessesUsingPath(wchar_t* pszAppName, wchar_t* pszPath);
 
 int main()
 {

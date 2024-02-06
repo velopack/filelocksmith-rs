@@ -6,7 +6,7 @@
 #pragma comment(lib, "comctl32.lib")
 
 /* Adapted from "https://learn.microsoft.com/windows/win32/secauthz/enabling-and-disabling-privileges-in-c--" */
-bool SetDebugPrivilege()
+extern "C" bool SetDebugPrivilege()
 {
 	HANDLE hToken;
 	TOKEN_PRIVILEGES tp{};
@@ -52,7 +52,7 @@ bool SetDebugPrivilege()
 
 // adapted from common/utils/elevation.h. No need to bring all dependencies to this project, though.
 // TODO: Make elevation.h lighter so that this function can be used without bringing dependencies like spdlog in.
-bool IsProcessElevated()
+extern "C" bool IsProcessElevated()
 {
 	HANDLE token = nullptr;
 	bool elevated = false;
@@ -87,7 +87,7 @@ bool CloseProcesses(std::vector<ProcessResult>& processes)
 	return true;
 }
 
-bool TryCloseProcessesUsingPath(wchar_t* pszAppName, wchar_t* pszPath)
+extern "C" bool TryCloseProcessesUsingPath(wchar_t* pszAppName, wchar_t* pszPath)
 {
 	std::wstring path(pszPath);
 	std::wstring appName(pszAppName);
