@@ -105,30 +105,31 @@ bool TryCloseProcessesUsingPath(wchar_t* pszAppName, wchar_t* pszPath)
 		int nButtonPressed = 0;
 		TASKDIALOGCONFIG config = { 0 };
 		const TASKDIALOG_BUTTON buttons[] = {
-			{ IDRETRY, L"Retry\nTry again if you've closed the programs"},
-			{ IDOK, L"Continue\nAttempt to close the programs automatically and then continue" },
+			{ IDRETRY, L"Retry\nTry again if you've closed the program(s)"},
+			{ IDOK, L"Continue\nAttempt to close the program(s) automatically" },
 			{ IDCANCEL, L"Cancel\nThe update will not continue" },
 		};
 
 		std::wstring message = L"There is a program (" + results[0].name + L" [" + std::to_wstring(results[0].pid)
-			+ L"]) preventing the update from proceeding. You can continue and try to close it automatically, or close it yourself and retry the update.";
+			+ L"]) preventing the " + appName + L" update from proceeding."
+			+ L"\n\nYou can press Continue to attempt closing it automatically, or close it yourself and then press Retry.";
 
 		if (numResults > 1)
 		{
-			message = L"There are " + std::to_wstring(numResults) + L" programs preventing the update from proceeding:\n";
+			message = L"There are " + std::to_wstring(numResults) + L" programs preventing the " + appName + L" update from proceeding:\n";
 			for (size_t i = 0; i < numResults; i++)
 			{
 				message += L"\n" + results[i].name + L" [" + std::to_wstring(results[i].pid) + L"]";
 			}
-			message += L"\n\nYou can continue and try to close them automatically, or close them yourself and retry the update.";
+			message += L"\n\nYou can press Continue to attempt closing them automatically, or close them yourself and then press Retry.";
 		}
 
 		std::wstring title = appName + L" Update";
-		std::wstring instruction = appName + L" update blocked by running programs";
+		std::wstring instruction = appName + L" Update";
 
 		config.cbSize = sizeof(config);
 		config.hInstance = GetModuleHandle(NULL);
-		config.pszMainIcon = TD_WARNING_ICON;
+		config.pszMainIcon = TD_INFORMATION_ICON;
 		config.pszMainInstruction = instruction.c_str();
 		config.pszWindowTitle = title.c_str();
 		config.pszContent = message.c_str();
