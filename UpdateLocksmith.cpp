@@ -1,9 +1,60 @@
 #include "pch.h"
+#include "json.hpp"
+#include "Shlobj.h"
 
 #include "PowerToys/src/modules/FileLocksmith/FileLocksmithLibInterop/FileLocksmith.h"
 
-#include "Commctrl.h"
-#pragma comment(lib, "comctl32.lib")
+using namespace std;
+using namespace nlohmann;
+
+static string wstring_to_utf8(wstring const& wstr)
+{
+	if (wstr.empty()) return string();
+	int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), NULL, 0, NULL, NULL);
+	string strTo(size_needed, 0);
+	WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), &strTo[0], size_needed, NULL, NULL);
+	return strTo;
+
+}
+
+static wstring utf8_to_wstring(string const& str)
+{
+	if (str.empty()) return wstring();
+	int size_needed = MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), NULL, 0);
+	wstring strTo(size_needed, 0);
+	MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), &strTo[0], size_needed);
+	return strTo;
+}
+
+static std::wstring trim_nulls(const std::wstring& str) {
+	size_t newSize = str.find_last_not_of(L'\0');
+	if (newSize != std::wstring::npos) {
+		return str.substr(0, newSize + 1);
+	}
+	return L"";
+}
+
+static std::string trim_nulls(const std::string& str) {
+	size_t newSize = str.find_last_not_of('\0');
+	if (newSize != std::string::npos) {
+		return str.substr(0, newSize + 1);
+	}
+	return "";
+}
+
+static char* to_pointer(const std::string& str) {
+	size_t length = str.length() + 1;
+	char* copy = (char*)malloc(length);
+	if (copy) {
+		strcpy_s(copy, length, str.c_str());
+	}
+	return copy;
+}
+
+static char* to_pointer(const std::wstring& str) {
+	std::string utf8 = wstring_to_utf8(str);
+	return to_pointer(utf8);
+}
 
 /* Adapted from "https://learn.microsoft.com/windows/win32/secauthz/enabling-and-disabling-privileges-in-c--" */
 extern "C" bool SetDebugPrivilege()
@@ -72,7 +123,7 @@ extern "C" bool IsProcessElevated()
 	return elevated;
 }
 
-bool CloseProcesses(std::vector<ProcessResult>& processes)
+bool CloseProcesses(vector<ProcessResult>& processes)
 {
 	for (auto& process : processes)
 	{
@@ -87,68 +138,39 @@ bool CloseProcesses(std::vector<ProcessResult>& processes)
 	return true;
 }
 
-extern "C" bool TryCloseProcessesUsingPath(wchar_t* pszAppName, wchar_t* pszPath)
-{
-	std::wstring path(pszPath);
-	std::wstring appName(pszAppName);
-	std::vector<std::wstring> paths{ path };
-
-	while (true) {
-		auto results = find_processes_recursive(paths);
-		auto numResults = results.size();
-
-		if (numResults == 0)
-		{
-			return true;
-		}
-
-		int nButtonPressed = 0;
-		TASKDIALOGCONFIG config = { 0 };
-		const TASKDIALOG_BUTTON buttons[] = {
-			{ IDRETRY, L"Retry\nTry again if you've closed the program(s)"},
-			{ IDOK, L"Continue\nAttempt to close the program(s) automatically" },
-			{ IDCANCEL, L"Cancel\nThe update will not continue" },
-		};
-
-		std::wstring message = L"There is a program (" + results[0].name + L" [" + std::to_wstring(results[0].pid)
-			+ L"]) preventing the " + appName + L" update from proceeding."
-			+ L"\n\nYou can press Continue to attempt closing it automatically, or close it yourself and then press Retry.";
-
-		if (numResults > 1)
-		{
-			message = L"There are " + std::to_wstring(numResults) + L" programs preventing the " + appName + L" update from proceeding:\n";
-			for (size_t i = 0; i < numResults; i++)
-			{
-				message += L"\n" + results[i].name + L" [" + std::to_wstring(results[i].pid) + L"]";
-			}
-			message += L"\n\nYou can press Continue to attempt closing them automatically, or close them yourself and then press Retry.";
-		}
-
-		std::wstring title = appName + L" Update";
-		std::wstring instruction = appName + L" Update";
-
-		config.cbSize = sizeof(config);
-		config.hInstance = GetModuleHandle(NULL);
-		config.pszMainIcon = TD_INFORMATION_ICON;
-		config.pszMainInstruction = instruction.c_str();
-		config.pszWindowTitle = title.c_str();
-		config.pszContent = message.c_str();
-		config.dwFlags = TDF_USE_COMMAND_LINKS | TDF_ALLOW_DIALOG_CANCELLATION;
-		config.pButtons = buttons;
-		config.cButtons = ARRAYSIZE(buttons);
-
-		TaskDialogIndirect(&config, &nButtonPressed, NULL, NULL);
-		switch (nButtonPressed)
-		{
-		case IDOK:
-			CloseProcesses(results);
-			// retry now
-			break;
-		case IDRETRY:
-			// retry now
-			break;
-		default: // cancel or anything else
-			return false;
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ProcessResult, name, pid, user, files)
+namespace std {
+	void to_json(json& j, const wstring& p) {
+		j = trim_nulls(wstring_to_utf8(p));
+	}
+	void from_json(const json& j, wstring& p) {
+		if (j.is_string()) {
+			string utf8 = j.get<string>();
+			p = utf8_to_wstring(utf8);
 		}
 	}
+} // namespace std
+
+extern "C" char* FindLockingProcessesAtPathAsJson(char* path_utf8, size_t path_length)
+{
+	try {
+		string utf8path(path_utf8, path_length);
+		wstring path = utf8_to_wstring(utf8path);
+		vector<wstring> paths{ path };
+		auto results = find_processes_recursive(paths);
+		if (results.size() == 0)
+		{
+			return nullptr;
+		}
+
+		json json_results = results;
+		string utf8result = json_results.dump();
+		return to_pointer(utf8result);
+	}
+	catch (...) {}
+	return nullptr;
+}
+
+extern "C" void FreeString(char* str) {
+	free(str);
 }

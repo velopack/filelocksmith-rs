@@ -156,6 +156,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="json.hpp" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PowerToys\src\modules\FileLocksmith\FileLocksmithLibInterop\FileLocksmith.h" />
     <ClInclude Include="PowerToys\src\modules\FileLocksmith\FileLocksmithLibInterop\NtdllBase.h" />
