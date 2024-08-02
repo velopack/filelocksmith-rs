@@ -1,3 +1,34 @@
-Used by [Velopack](https://github.com/velopack/velopack) to detect running processes which might be locking an update directory.
+# filelocksmith-rs
+[![Version](https://img.shields.io/crates/v/filelocksmith?style=flat-square)](https://crates.io/crates/filelocksmith)
+[![License](https://img.shields.io/crates/l/filelocksmith?style=flat-square)](https://github.com/velopack/filelocksmith-rs/blob/master/LICENSE)
 
-This internally uses/exposes PowerToys FileLocksmith functionality as a C static lib with a function easily consumed by Rust code.
+Reliably find and quit processes that are locking a file or folder on Windows.
+This is a difficult problem to solve on Windows, as the OS does not provide a built-in or
+straight-forward way to do this.
+
+This library wraps the FileLocksmith module from the PowerToys project, which is written in C++.
+The implementation in PowerToys is endorsed by Microsoft and is very robust.
+
+## Installing
+```toml
+[dependencies]
+filelocksmith = "0.1"
+```
+
+## Usage
+```rust
+use filelocksmith::{find_processes_locking_path, quit_processes, pid_to_process_path};
+
+let path = "C:\\path\\to\\file.txt";
+let pids = find_processes_locking_path(path).unwrap();
+
+// print paths of processes locking the file
+for pid in &pids {
+   println!("[{}] {:?}", pid, pid_to_process_path(*pid));
+}
+
+// quit the processes locking the file
+if quit_processes(pids) {
+ println!("Processes quit successfully");
+}
+```

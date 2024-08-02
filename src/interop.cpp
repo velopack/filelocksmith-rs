@@ -106,19 +106,42 @@ extern "C" bool IsProcessElevated()
 	return elevated;
 }
 
-bool CloseProcesses(vector<ProcessResult> &processes)
+extern "C" void FindProcessesLockingPath(const char* path_utf8, size_t** pids, size_t* count)
 {
-	for (auto &process : processes)
-	{
-		HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, process.pid);
-		if (hProcess == NULL)
-		{
-			return false;
-		}
-		TerminateProcess(hProcess, 0);
-		CloseHandle(hProcess);
-	}
-	return true;
+    string utf8path(path_utf8);
+    wstring path = utf8_to_wstring(utf8path);
+    vector<wstring> paths{ path };
+    auto results = find_processes_recursive(paths);
+    *count = results.size();
+
+    if (*count == 0)
+    {
+        *pids = nullptr;
+        return;
+    }
+    
+    *pids = (size_t*)malloc(sizeof(size_t) * (*count));
+    for (size_t i = 0; i < *count; i++)
+    {
+        (*pids)[i] = results[i].pid;
+    }
+}
+
+extern "C" bool QuitProcesses(const size_t* pids, size_t count)
+{
+    bool ret = true;
+    for (size_t i = 0; i < count; i++)
+    {
+        size_t pid = pids[i];
+        HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
+        if (hProcess == NULL)
+        {
+            ret = false;
+        }
+        TerminateProcess(hProcess, 0);
+        CloseHandle(hProcess);
+    }
+    return ret;
 }
 
 extern "C" char* PidToFullPath(size_t pid)
@@ -134,4 +157,9 @@ extern "C" char* PidToFullPath(size_t pid)
 extern "C" void FreeString(char *ptr)
 {
 	free(ptr);
+}
+
+extern "C" void FreeArray(size_t *ptr)
+{
+    free(ptr);
 }

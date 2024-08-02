@@ -1,25 +1,24 @@
 [package]
-name = "file_locksmith"
-version = "0.0.0-local"
+name = "filelocksmith"
+version = "0.1.0"
 edition = "2021"
 license = "MIT"
 authors = ["Caelan Sayler <git@caesay.com>"]
 description = "Detect what processes are locking a file or folder on Windows"
 readme = "README.md"
-# exclude = ["/samples"]
-# homepage = "https://velopack.io"
-# repository = "https://github.com/velopack/velopack.fusion"
-# keywords = ["update", "install", "velopack", "squirrel", "automatic-updates"]
-# categories = ["development-tools"]
+homepage = "https://github.com/velopack/filelocksmith-rs"
+repository = "https://github.com/velopack/filelocksmith-rs"
+keywords = ["windows", "locksmith", "powertoys", "find", "locking"]
+categories = ["development-tools"]
+
+exclude = [
+    "PowerToys/*",
+    "!PowerToys/src/modules/FileLocksmith/FileLocksmithLibInterop/**/*"
+]
 
 [lib]
-name = "file_locksmith"
+name = "filelocksmith"
 path = "src/lib.rs"
-
-# [build-dependencies]
-# cc = "1.0"
-
-
 
 [build-dependencies]
 cc = "1.1"
