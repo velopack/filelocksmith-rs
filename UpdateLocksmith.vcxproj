@@ -156,14 +156,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="json.hpp" />
+    <ClInclude Include="Interop.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PowerToys\src\modules\FileLocksmith\FileLocksmithLibInterop\FileLocksmith.h" />
     <ClInclude Include="PowerToys\src\modules\FileLocksmith\FileLocksmithLibInterop\NtdllBase.h" />
     <ClInclude Include="PowerToys\src\modules\FileLocksmith\FileLocksmithLibInterop\NtdllExtensions.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="UpdateLocksmith.cpp" />
+    <ClCompile Include="Interop.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

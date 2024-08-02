@@ -27,12 +27,12 @@
     <ClInclude Include="PowerToys\src\modules\FileLocksmith\FileLocksmithLibInterop\NtdllExtensions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="json.hpp">
+    <ClInclude Include="Interop.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="UpdateLocksmith.cpp">
+    <ClCompile Include="Interop.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
