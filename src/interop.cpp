@@ -1,8 +1,6 @@
 #include "pch.h"
 #include "Shlobj.h"
-
 #include "FileLocksmith.h"
-#include "file_locksmith/src/lib.rs.h"
 
 using namespace std;
 
@@ -26,7 +24,7 @@ static wstring utf8_to_wstring(string const &str)
 	return strTo;
 }
 
-static char *to_pointer(const std::string &str)
+static char* to_pointer(const std::string &str)
 {
 	size_t length = str.length() + 1;
 	char *copy = (char *)malloc(length);
@@ -37,14 +35,14 @@ static char *to_pointer(const std::string &str)
 	return copy;
 }
 
-static char *to_pointer(const std::wstring &str)
+static char* to_pointer(const std::wstring &str)
 {
 	std::string utf8 = wstring_to_utf8(str);
 	return to_pointer(utf8);
 }
 
 /* Adapted from "https://learn.microsoft.com/windows/win32/secauthz/enabling-and-disabling-privileges-in-c--" */
-bool SetDebugPrivilege()
+extern "C" bool SetDebugPrivilege()
 {
 	HANDLE hToken;
 	TOKEN_PRIVILEGES tp{};
@@ -88,9 +86,7 @@ bool SetDebugPrivilege()
 	return false;
 }
 
-// adapted from common/utils/elevation.h. No need to bring all dependencies to this project, though.
-// TODO: Make elevation.h lighter so that this function can be used without bringing dependencies like spdlog in.
-bool IsProcessElevated()
+extern "C" bool IsProcessElevated()
 {
 	HANDLE token = nullptr;
 	bool elevated = false;
@@ -125,8 +121,17 @@ bool CloseProcesses(vector<ProcessResult> &processes)
 	return true;
 }
 
-std::string PidToFullPath(size_t pid)
+extern "C" char* PidToFullPath(size_t pid)
 {
 	wstring path = pid_to_full_path(pid);
-	return wstring_to_utf8(path);
+	if (path.empty())
+    {
+        return nullptr;
+    }
+	return to_pointer(path);
+}
+
+extern "C" void FreeString(char *ptr)
+{
+	free(ptr);
 }

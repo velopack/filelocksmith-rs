@@ -1,30 +1,41 @@
-#[cxx::bridge]
-mod ffi {
-    struct CProcessInfo {
-        name: String,
-        pid: usize,
-    }
+use std::ffi::{CStr, CString};
+use std::os::raw::c_char;
+use std::path::Path;
 
-    unsafe extern "C++" {
-        // One or more headers with the matching C++ declarations. Our code
-        // generators don't read it but it gets #include'd and used in static
-        // assertions to ensure our picture of the FFI boundary is accurate.
-        include!("interop.h");
+extern "C" {
+    fn PidToFullPath(pid: usize) -> *mut c_char;
+    fn FreeString(ptr: *mut c_char);
+    fn IsProcessElevated() -> bool;
+    fn SetDebugPrivilege() -> bool;
+}
 
-        // // Zero or more opaque types which both languages can pass around but
-        // // only C++ can see the fields.
-        // type BlobstoreClient;
+pub struct ProcessInfo {
+    pub name: String,
+    pub pid: usize,
+}
 
-        // // Functions implemented in C++.
-        // fn new_blobstore_client() -> UniquePtr<BlobstoreClient>;
-        // fn put(&self, parts: &mut MultiBuf) -> u64;
-        // fn tag(&self, blobid: u64, tag: &str);
-        // fn metadata(&self, blobid: u64) -> BlobMetadata;
+// pub fn find_processes_locking_path<P: AsRef<Path>>(path: P) -> Vec<ProcessInfo> {}
 
-        fn SetDebugPrivilege() -> bool;
-        fn IsProcessElevated() -> bool;
-        // fn FindProcessesLockingPath(path: String) -> Vec<CProcessInfo>;
-        // fn CloseProcesses(lockedProcesses: Vec<CProcessInfo>) -> bool;
-        // fn PidToFullPath(pid: u32) -> bool;
+// pub fn quit_processes(locked_processes: Vec<ProcessInfo>) -> bool {}
+
+pub fn is_process_elevated() -> bool {
+    unsafe { IsProcessElevated() }
+}
+
+pub fn set_debug_privilege() -> bool {
+    unsafe { SetDebugPrivilege() }
+}
+
+pub fn pid_to_process_path(pid: usize) -> Option<String> {
+    unsafe {
+        let c_str_ptr = PidToFullPath(pid);
+        if c_str_ptr.is_null() {
+            None
+        } else {
+            let c_str = CStr::from_ptr(c_str_ptr);
+            let r_str = c_str.to_string_lossy().into_owned();
+            FreeString(c_str_ptr);
+            Some(r_str)
+        }
     }
 }
