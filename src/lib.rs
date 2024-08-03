@@ -1,14 +1,15 @@
 //! # filelocksmith-rs
 //! [![Version](https://img.shields.io/crates/v/filelocksmith?style=flat-square)](https://crates.io/crates/filelocksmith)
 //! [![License](https://img.shields.io/crates/l/filelocksmith?style=flat-square)](https://github.com/velopack/filelocksmith-rs/blob/master/LICENSE)
+//! [![Documentation](https://img.shields.io/docsrs/filelocksmith?style=flat-square)](https://docs.rs/filelocksmith/latest/filelocksmith/)
 //!
 //! Reliably find and quit processes that are locking a file or folder on Windows.
 //! This is a difficult problem to solve on Windows, as the OS does not provide a built-in or 
-//! straight-forward way to do this. Additionally, unlike *nix, files and folders can not be
-//! deleted or moved while they are locked by a process.
+//! straight-forward way to do this. 
+//! 
+//! Additionally, unlike *nix, files and folders can not be deleted or moved while they are locked by a process.
 //!
-//! This library wraps the FileLocksmith module from the PowerToys project, which is written in C++.
-//! The implementation in PowerToys is endorsed by Microsoft and is very robust. 
+//! This library wraps the FileLocksmith module from the Microsoft PowerToys project, which is written in C++.
 //!
 //! ## Installing
 //! ```toml
@@ -51,12 +52,15 @@ extern "C" {
     fn FindProcessesLockingPath(path_utf8: *mut c_char, pids: *mut *mut usize, count: *mut usize);
 }
 
-/// Find processes locking a file or folder. Returns a list of process IDs. 
+/// Find processes locking a file or folder. Returns a list of process IDs.
+/// 
 /// If the current Rust process is not running as administrator, but the locking process is,
-/// the locking process will not be detected. You can use `is_process_elevated` to check if the
-/// current process is running as administrator. Also, you can use `set_debug_privilege` to set
-/// the SeDebugPrivilege, which will allow the current process to detect all processes on the
-/// system. Note that `set_debug_privilege` also requires administrator privileges to work.
+/// the locking process will not be detected. 
+/// 
+/// You can use `is_process_elevated` to check if the current process is running as administrator. 
+/// Also, you can use `set_debug_privilege` to set the SeDebugPrivilege, which will allow the 
+/// current process to detect all processes on the system. Note that `set_debug_privilege` also 
+/// requires administrator privileges to work.
 pub fn find_processes_locking_path<P: AsRef<Path>>(path: P) -> Vec<usize> {
     let path = path.as_ref().as_os_str().as_encoded_bytes();
     let c_path = CString::new(path).expect("CString::new failed");
