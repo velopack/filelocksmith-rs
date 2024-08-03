@@ -103,7 +103,8 @@ pub fn pid_to_process_path(pid: usize) -> Option<String> {
 }
 
 /// Quits processes given a list of process IDs. Returns true if all processes were quit 
-/// successfully. If one or more processes could not be quit, this function will return false.
+/// successfully, or there were no processes to quit. If one or more processes could not be quit, 
+/// this function will return false.
 pub fn quit_processes(pids: Vec<usize>) -> bool {
     unsafe {
         QuitProcesses(pids.as_ptr(), pids.len())
