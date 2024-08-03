@@ -8,6 +8,7 @@ description = "Detect what processes are locking a file or folder on Windows"
 readme = "README.md"
 homepage = "https://github.com/velopack/filelocksmith-rs"
 repository = "https://github.com/velopack/filelocksmith-rs"
+documentation = "https://docs.rs/filelocksmith"
 keywords = ["windows", "locksmith", "powertoys", "find", "locking"]
 categories = ["development-tools"]
 
