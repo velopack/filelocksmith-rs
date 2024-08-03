@@ -20,7 +20,7 @@ filelocksmith = "0.1"
 use filelocksmith::{find_processes_locking_path, quit_processes, pid_to_process_path};
 
 let path = "C:\\path\\to\\file.txt";
-let pids = find_processes_locking_path(path).unwrap();
+let pids = find_processes_locking_path(path);
 
 // print paths of processes locking the file
 for pid in &pids {
