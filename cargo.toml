@@ -1,6 +1,6 @@
 [package]
 name = "filelocksmith"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 license = "MIT"
 authors = ["Caelan Sayler <git@caesay.com>"]
@@ -16,8 +16,11 @@ exclude = [
     "!PowerToys/src/modules/FileLocksmith/FileLocksmithLibInterop/**/*"
 ]
 
+[features]
+private-docs-rs = []
+
 [package.metadata.docs.rs]
-default-target = "x86_64-pc-windows-msvc"
+features = ["private-docs-rs"] # workaround to skip C++ build on docs.rs
 
 [lib]
 name = "filelocksmith"

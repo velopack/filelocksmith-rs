@@ -4,7 +4,8 @@
 //!
 //! Reliably find and quit processes that are locking a file or folder on Windows.
 //! This is a difficult problem to solve on Windows, as the OS does not provide a built-in or 
-//! straight-forward way to do this.
+//! straight-forward way to do this. Additionally, unlike *nix, files and folders can not be
+//! deleted or moved while they are locked by a process.
 //!
 //! This library wraps the FileLocksmith module from the PowerToys project, which is written in C++.
 //! The implementation in PowerToys is endorsed by Microsoft and is very robust. 
