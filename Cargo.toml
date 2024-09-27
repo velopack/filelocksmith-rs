@@ -1,6 +1,6 @@
 [package]
 name = "filelocksmith"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
 license = "MIT"
 authors = ["Caelan Sayler <git@caesay.com>"]
@@ -28,4 +28,4 @@ name = "filelocksmith"
 path = "src/lib.rs"
 
 [build-dependencies]
-cc = "1.1"
+cc = "1"
