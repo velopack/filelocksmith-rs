@@ -1,7 +1,7 @@
 use std::fs;
 use std::process::{Command, Stdio};
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 fn main() {
     let test_dir = std::env::temp_dir().join("filelocksmith-ci-test");
@@ -22,23 +22,36 @@ fn main() {
         .args(["-NoProfile", "-Command", &ps_command])
         .stdin(Stdio::null())
         .stdout(Stdio::null())
-        .stderr(Stdio::null())
+        .stderr(Stdio::piped())
         .spawn()
         .expect("failed to spawn powershell");
 
     let child_pid = child.id() as usize;
     println!("spawned locking process pid={child_pid}");
 
-    // Give PowerShell time to open the file
-    thread::sleep(Duration::from_secs(3));
-
-    // Detect which processes are locking the file
-    let pids = filelocksmith::find_processes_locking_path(&test_file);
-    println!("locking pids: {pids:?}");
-    assert!(
-        pids.contains(&child_pid),
-        "expected pid {child_pid} in locking pids {pids:?}"
-    );
+    // Poll until the lock is detected (PowerShell can be slow to start on CI)
+    let timeout = Duration::from_secs(30);
+    let start = Instant::now();
+    let mut pids;
+    loop {
+        thread::sleep(Duration::from_secs(1));
+        pids = filelocksmith::find_processes_locking_path(&test_file);
+        if pids.contains(&child_pid) {
+            break;
+        }
+        if start.elapsed() > timeout {
+            // Check if PowerShell crashed
+            if let Some(status) = child.try_wait().expect("failed to check child") {
+                let mut stderr_buf = String::new();
+                if let Some(mut stderr) = child.stderr.take() {
+                    std::io::Read::read_to_string(&mut stderr, &mut stderr_buf).ok();
+                }
+                panic!("powershell exited early with {status}, locking pids: {pids:?}, stderr: {stderr_buf}");
+            }
+            panic!("timed out waiting for pid {child_pid} in locking pids {pids:?}");
+        }
+    }
+    println!("locking pids: {pids:?} (detected after {:?})", start.elapsed());
 
     // Verify we can resolve the process path
     let proc_path =
