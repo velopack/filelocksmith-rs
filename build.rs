@@ -9,9 +9,11 @@ fn main() {
         build.file(r"PowerToys\src\modules\FileLocksmith\FileLocksmithLibInterop\NtdllBase.cpp");
         build.file(r"PowerToys\src\modules\FileLocksmith\FileLocksmithLibInterop\NtdllExtensions.cpp");
         build.file(r"src/interop.cpp");
+        build.define("FILELOCKSMITH_LIB_STATIC", None);
         build.flag_if_supported("/std:c++17");
         build.compile("powertoys_locksmith");
 
+        println!("cargo:rustc-link-lib=advapi32");
         println!("cargo:rerun-if-changed=src/lib.rs");
         println!("cargo:rerun-if-changed=src/interop.cpp");
     }
