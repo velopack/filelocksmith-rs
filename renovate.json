@@ -1,0 +1,18 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":semanticCommitsDisabled"
+  ],
+  "labels": ["renovate"],
+  "schedule": ["on friday before 11am"],
+  "timezone": "Europe/London",
+  "dependencyDashboard": true,
+  "automergeType": "pr",
+  "automergeStrategy": "rebase",
+  "platformAutomerge": false,
+  "lockFileMaintenance": {
+    "enabled": true,
+    "automerge": true
+  }
+}
