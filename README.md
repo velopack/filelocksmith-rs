@@ -9,7 +9,7 @@ straight-forward way to do this.
 
 Additionally, unlike *nix, files and folders can not be deleted or moved while they are locked by a process.
 
-This library wraps the FileLocksmith module from the Microsoft PowerToys project, which is written in C++.
+This is a pure Rust implementation using Windows NT APIs, inspired by the FileLocksmith module from Microsoft PowerToys.
 
 Further documentation at https://docs.rs/filelocksmith
 

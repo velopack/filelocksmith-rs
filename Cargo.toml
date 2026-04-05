@@ -12,23 +12,22 @@ documentation = "https://docs.rs/filelocksmith"
 keywords = ["windows", "locksmith", "powertoys", "find", "locking"]
 categories = ["development-tools"]
 
-exclude = [
-    "PowerToys/*",
-    "!PowerToys/src/modules/FileLocksmith/FileLocksmithLibInterop/**/*"
-]
-
-[features]
-private-docs-rs = []
-
 [package.metadata.docs.rs]
-features = ["private-docs-rs"] # workaround to skip C++ build on docs.rs
+default-target = "x86_64-pc-windows-msvc"
 
 [lib]
 name = "filelocksmith"
 path = "src/lib.rs"
 
-[build-dependencies]
-cc = "1"
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.59", features = [
+    "Win32_Foundation",
+    "Win32_System_Threading",
+    "Win32_System_ProcessStatus",
+    "Win32_Storage_FileSystem",
+    "Win32_Security",
+    "Win32_System_LibraryLoader",
+] }
 
 [[test]]
 name = "ci_test"

@@ -2,20 +2,23 @@ name: CI
 
 on:
   push:
-    branches: [master]
+    branches: [master, develop]
   pull_request:
+    branches: [master, develop]
+  workflow_dispatch:
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
   build:
-    name: Build
-    runs-on: windows-latest
+    name: Build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-2022, windows-2025]
     steps:
       - uses: actions/checkout@v6
-        with:
-          submodules: true
 
       - uses: dtolnay/rust-toolchain@stable
 
