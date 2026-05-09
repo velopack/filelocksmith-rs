@@ -8,22 +8,14 @@ use std::path::Path;
 use std::ptr;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-use windows_sys::Win32::Foundation::{
-    CloseHandle, DuplicateHandle, DUPLICATE_SAME_ACCESS, HANDLE, WAIT_OBJECT_0,
-};
-use windows_sys::Win32::Storage::FileSystem::{
-    CreateFileW, GetFileType, FILE_FLAG_BACKUP_SEMANTICS, FILE_SHARE_DELETE, FILE_SHARE_READ,
-    FILE_SHARE_WRITE, FILE_TYPE_DISK, OPEN_EXISTING,
-};
-use windows_sys::Win32::System::ProcessStatus::{
-    EnumProcessModules, EnumProcesses, GetModuleFileNameExW,
-};
-use windows_sys::Win32::System::Threading::{
-    CreateThread, GetCurrentProcess, OpenProcess, TerminateThread, WaitForSingleObject,
-    PROCESS_DUP_HANDLE, PROCESS_QUERY_INFORMATION, PROCESS_VM_READ,
-};
-
 use crate::ntapi::*;
+use crate::winapi::{
+    CloseHandle, CreateFileW, CreateThread, DuplicateHandle, EnumProcessModules, EnumProcesses,
+    GetCurrentProcess, GetFileType, GetModuleFileNameExW, OpenProcess, TerminateThread,
+    WaitForSingleObject, DUPLICATE_SAME_ACCESS, FILE_FLAG_BACKUP_SEMANTICS, FILE_SHARE_DELETE,
+    FILE_SHARE_READ, FILE_SHARE_WRITE, FILE_TYPE_DISK, HANDLE, OPEN_EXISTING, PROCESS_DUP_HANDLE,
+    PROCESS_QUERY_INFORMATION, PROCESS_VM_READ, WAIT_OBJECT_0,
+};
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
