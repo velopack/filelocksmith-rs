@@ -39,6 +39,8 @@
 mod handles;
 #[cfg(windows)]
 mod ntapi;
+#[cfg(windows)]
+mod winapi;
 
 use std::path::Path;
 
@@ -68,20 +70,10 @@ pub fn is_process_elevated() -> bool {
     #[cfg(windows)]
     {
         use std::ptr;
-        use windows_sys::Win32::Foundation::{CloseHandle, HANDLE};
-        use windows_sys::Win32::Security::{
-            GetTokenInformation, TokenElevation, TOKEN_ELEVATION, TOKEN_QUERY,
+        use crate::winapi::{
+            CloseHandle, GetCurrentProcess, GetTokenInformation, OpenProcessToken, TokenElevation,
+            HANDLE, TOKEN_ELEVATION, TOKEN_QUERY,
         };
-        use windows_sys::Win32::System::Threading::GetCurrentProcess;
-
-        #[link(name = "advapi32")]
-        extern "system" {
-            fn OpenProcessToken(
-                process_handle: HANDLE,
-                desired_access: u32,
-                token_handle: *mut HANDLE,
-            ) -> i32;
-        }
 
         unsafe {
             let mut token: HANDLE = ptr::null_mut();
@@ -114,23 +106,11 @@ pub fn set_debug_privilege() -> bool {
     #[cfg(windows)]
     {
         use std::ptr;
-        use windows_sys::Win32::Foundation::{
-            CloseHandle, GetLastError, HANDLE, ERROR_NOT_ALL_ASSIGNED,
+        use crate::winapi::{
+            AdjustTokenPrivileges, CloseHandle, GetCurrentProcess, GetLastError,
+            LookupPrivilegeValueW, OpenProcessToken, ERROR_NOT_ALL_ASSIGNED, HANDLE,
+            LUID_AND_ATTRIBUTES, SE_PRIVILEGE_ENABLED, TOKEN_ADJUST_PRIVILEGES, TOKEN_PRIVILEGES,
         };
-        use windows_sys::Win32::Security::{
-            AdjustTokenPrivileges, LookupPrivilegeValueW, LUID_AND_ATTRIBUTES,
-            SE_PRIVILEGE_ENABLED, TOKEN_ADJUST_PRIVILEGES, TOKEN_PRIVILEGES,
-        };
-        use windows_sys::Win32::System::Threading::GetCurrentProcess;
-
-        #[link(name = "advapi32")]
-        extern "system" {
-            fn OpenProcessToken(
-                process_handle: HANDLE,
-                desired_access: u32,
-                token_handle: *mut HANDLE,
-            ) -> i32;
-        }
 
         // "SeDebugPrivilege\0"
         const SE_DEBUG_NAME: [u16; 17] = [
@@ -183,9 +163,8 @@ pub fn pid_to_process_path(pid: usize) -> Option<String> {
     #[cfg(windows)]
     {
         use std::ptr;
-        use windows_sys::Win32::System::ProcessStatus::GetModuleFileNameExW;
-        use windows_sys::Win32::System::Threading::{
-            OpenProcess, PROCESS_QUERY_INFORMATION, PROCESS_VM_READ,
+        use crate::winapi::{
+            GetModuleFileNameExW, OpenProcess, PROCESS_QUERY_INFORMATION, PROCESS_VM_READ,
         };
 
         let process =
@@ -215,10 +194,7 @@ pub fn pid_to_process_path(pid: usize) -> Option<String> {
 pub fn quit_processes(pids: Vec<usize>) -> bool {
     #[cfg(windows)]
     {
-        use windows_sys::Win32::Foundation::CloseHandle;
-        use windows_sys::Win32::System::Threading::{
-            OpenProcess, TerminateProcess, PROCESS_TERMINATE,
-        };
+        use crate::winapi::{CloseHandle, OpenProcess, TerminateProcess, PROCESS_TERMINATE};
 
         let mut ok = true;
         for pid in pids {

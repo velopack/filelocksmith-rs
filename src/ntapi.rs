@@ -2,8 +2,7 @@
 
 use std::ffi::c_void;
 
-use windows_sys::Win32::Foundation::{CloseHandle, HANDLE, INVALID_HANDLE_VALUE};
-use windows_sys::Win32::System::LibraryLoader::{GetModuleHandleW, GetProcAddress};
+use crate::winapi::{CloseHandle, GetModuleHandleW, GetProcAddress, HANDLE, INVALID_HANDLE_VALUE};
 
 // ── Constants ──────────────────────────────────────────────────────────────
 
